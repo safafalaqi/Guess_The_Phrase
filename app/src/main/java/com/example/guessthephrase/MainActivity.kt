@@ -21,7 +21,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var myRv: RecyclerView
     private lateinit var myLayout: ConstraintLayout
     private lateinit var staredStr: CharArray
-
+    private var checkNoStar = false
     private var guessPhraseCount = 10
     private var guessLetterCount = 10
     private val str ="coding dojo is great"
@@ -37,37 +37,36 @@ class MainActivity : AppCompatActivity() {
         myRv = findViewById<RecyclerView>(R.id.rvMain)
         myLayout = findViewById<ConstraintLayout>(R.id.clMain)
 
+
         //take a string and convert each letter into a star character
         //replace all characters to *
-        textView.text = " ${str.replace("[^\\s]".toRegex(), "*")}"
+        textView.text = "${str.replace("[^\\s]".toRegex(), "*")}"
         staredStr = textView.text.toString().toCharArray()
         println(staredStr)
         //- ask the user to guess a predefined phrase
         button.setOnClickListener{
+
           if(guessPhraseCount>0) {
+              // - change the Entry Text hint to reflect whether the user is guessing the phrase or a lette
               textEdit.setHint("Guess a Phrase")
               textEdit.maxLines=1
               guessPhrase()
           }
           else
           {
+              // - change the Entry Text hint to reflect whether the user is guessing the phrase or a lette
               textEdit.setHint("Guess a Letter")
               textEdit.filters += InputFilter.LengthFilter(1)
               guessLetter()
           }
 
         }
-       //  - ask the user to guess a letter from the phrase if they cannot guess the full phrase
-       // - check the phrase for the guessed letter and convert stars into correctly guessed letters
-       // - track guessed letters and display them to the user
-        //- allow the user to guess the full phrase 10 times, the user should be able to enter a phrase during this stage
-        //- allow the user to guess 10 letters, the user should only be able to enter single letters during this stage
-       // - change the Entry Text hint to reflect whether the user is guessing the phrase or a letter
     }
 
     private fun guessLetter() {
 
         val guess = textEdit.text.toString().toCharArray(0)
+
 
         if (textEdit.text.isEmpty()) {
             Snackbar.make(myLayout, "Please enter a Letter", Snackbar.LENGTH_LONG).show()
@@ -77,6 +76,12 @@ class MainActivity : AppCompatActivity() {
         {
             showAlertDialog("You Lost")
             textEdit.getText().clear()
+        }else if(checkNoStar==true){
+            showAlertDialog("You win")
+            //then clear the Edit Text field.
+            textEdit.getText().clear()
+            myRv.adapter = RecyclerViewAdapter(guessedLetters)
+            myRv.layoutManager = LinearLayoutManager(this)
         }
         else if(findChar(guess)) {
 
@@ -112,6 +117,19 @@ class MainActivity : AppCompatActivity() {
             }
 
         }
+        //if no star make checkNoStar true
+        checkNoStar = !staredStr.contains('*')
+        if(checkNoStar)
+        {
+            showAlertDialog("You win")
+            textEdit.text.clear()
+            button.isEnabled = false
+            button.isClickable = false
+            button.isEnabled = false
+            button.isClickable = false
+            textEdit.text.clear()
+        }
+
 
         if (count>0) {
             guessedLetters.add("Found $count ${guess[0].uppercase()}(s) ")

@@ -22,11 +22,10 @@ class MainActivity : AppCompatActivity() {
     private lateinit var myLayout: ConstraintLayout
     private lateinit var staredStr: CharArray
     private var checkNoStar = false
-    private var guessPhraseCount = 10
-    private var guessLetterCount = 10
+    private var guessPhraseCount = 9
+    private var guessLetterCount = 9
     private val str ="coding dojo is great"
-    private var guessedPhrase = arrayListOf<String>()
-    private var guessedLetters = arrayListOf<String>()
+    private var guessedPhraseLetters = arrayListOf<String>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,7 +35,8 @@ class MainActivity : AppCompatActivity() {
         button = findViewById<Button>(R.id.button)
         myRv = findViewById<RecyclerView>(R.id.rvMain)
         myLayout = findViewById<ConstraintLayout>(R.id.clMain)
-
+        myRv.adapter = RecyclerViewAdapter(guessedPhraseLetters)
+        myRv.layoutManager = LinearLayoutManager(this)
 
         //take a string and convert each letter into a star character
         //replace all characters to *
@@ -46,7 +46,7 @@ class MainActivity : AppCompatActivity() {
         //- ask the user to guess a predefined phrase
         button.setOnClickListener{
 
-          if(guessPhraseCount>0) {
+          if(guessPhraseCount>=0) {
               // - change the Entry Text hint to reflect whether the user is guessing the phrase or a lette
               textEdit.setHint("Guess a Phrase")
               textEdit.maxLines=1
@@ -54,6 +54,7 @@ class MainActivity : AppCompatActivity() {
           }
           else
           {
+              guessedPhraseLetters.add("Guess letter Now")
               // - change the Entry Text hint to reflect whether the user is guessing the phrase or a lette
               textEdit.setHint("Guess a Letter")
               textEdit.filters += InputFilter.LengthFilter(1)
@@ -80,27 +81,27 @@ class MainActivity : AppCompatActivity() {
             showAlertDialog("You win")
             //then clear the Edit Text field.
             textEdit.getText().clear()
-            myRv.adapter = RecyclerViewAdapter(guessedLetters)
-            myRv.layoutManager = LinearLayoutManager(this)
+            myRv.adapter!!.notifyDataSetChanged()
         }
         else if(findChar(guess)) {
 
             //then clear the Edit Text field.
             textEdit.getText().clear()
-            guessedLetters.add("${guessLetterCount} guesses reamining")
+            //guessedPhraseLetters.add("${guessLetterCount} guesses reamining")
+            myRv.adapter!!.notifyDataSetChanged()
         }
         else
         {
-            guessedLetters.add("Wrong guess: ${textEdit.text.toString()}")
-            guessedLetters.add("${guessLetterCount} guesses reamining")
+            guessedPhraseLetters.add("Wrong guess: ${textEdit.text.toString()}")
+            guessedPhraseLetters.add("${guessLetterCount} guesses reamining")
 
             //then clear the Edit Text field.
             textEdit.getText().clear()
-            myRv.adapter = RecyclerViewAdapter(guessedLetters)
-            myRv.layoutManager = LinearLayoutManager(this)
             guessLetterCount--
+            myRv.adapter!!.notifyDataSetChanged()
+
         }
-        myRv.scrollToPosition(guessedLetters.size - 1)
+        myRv.scrollToPosition(guessedPhraseLetters.size - 1)
 
     }
     private fun findChar(guess: CharArray):Boolean
@@ -125,14 +126,12 @@ class MainActivity : AppCompatActivity() {
             textEdit.text.clear()
             button.isEnabled = false
             button.isClickable = false
-            button.isEnabled = false
-            button.isClickable = false
             textEdit.text.clear()
         }
 
 
         if (count>0) {
-            guessedLetters.add("Found $count ${guess[0].uppercase()}(s) ")
+            guessedPhraseLetters.add("Found $count ${guess[0].uppercase()}(s) ")
             textView.text = String(staredStr)
             return true
         }
@@ -149,32 +148,40 @@ class MainActivity : AppCompatActivity() {
             textEdit.getText().clear()
         } else if(guessPhraseCount==0)  //if we have 0 guess
         {
-            //showAlertDialog("You Lost")
+            guessedPhraseLetters.add("Wrong guess: ${textEdit.text.toString()}")
+            guessedPhraseLetters.add("$guessPhraseCount guesses reamining")
+            //then clear the Edit Text field.
             textEdit.getText().clear()
+            myRv.adapter!!.notifyDataSetChanged()
+            guessPhraseCount--
+
+            // - change the Entry Text hint to reflect whether the user is guessing the phrase or a lette
+            textEdit.setHint("Guess a Letter")
+            textEdit.filters += InputFilter.LengthFilter(1)
         }
         else if(guess==str) {
             showAlertDialog("You win")
 
             textEdit.text.clear()
-            guessedPhrase.add("You guessed ${textEdit.text.toString()}\n Correct Guess! You win.")
+            button.isEnabled = false
+            button.isClickable = false
+            guessedPhraseLetters.add("You guessed ${textEdit.text.toString()}\n Correct Guess! You win.")
             //then clear the Edit Text field.
             textEdit.getText().clear()
-            myRv.adapter = RecyclerViewAdapter(guessedPhrase)
-            myRv.layoutManager = LinearLayoutManager(this)
+            myRv.adapter!!.notifyDataSetChanged()
             //set guess to 0 so the dialog box appear and the user will choose to play or not
            }
            else
             {
-                guessedPhrase.add("Wrong guess: ${textEdit.text.toString()}")
-                guessedPhrase.add("$guessPhraseCount guesses reamining")
-
+                guessedPhraseLetters.add("Wrong guess: ${textEdit.text.toString()}")
+                guessedPhraseLetters.add("$guessPhraseCount guesses reamining")
                 //then clear the Edit Text field.
                 textEdit.getText().clear()
-                myRv.adapter = RecyclerViewAdapter(guessedPhrase)
-                myRv.layoutManager = LinearLayoutManager(this)
                 guessPhraseCount--
+                myRv.adapter!!.notifyDataSetChanged()
+
             }
-        myRv.scrollToPosition(guessedPhrase.size - 1)
+        myRv.scrollToPosition(guessedPhraseLetters.size - 1)
     }
 
 

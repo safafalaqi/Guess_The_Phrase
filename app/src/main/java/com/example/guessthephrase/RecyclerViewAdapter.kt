@@ -1,5 +1,6 @@
 package com.example.guessthephrase
 
+import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -23,6 +24,13 @@ class ItemViewHolder(itemView: View):RecyclerView.ViewHolder(itemView)
         val text=text[position]
         holder.itemView.apply{
             tvText.text = text
+            if(text.startsWith("You" )||text.startsWith("Found")){
+                tvText.setTextColor(Color.GREEN)
+            }else if(text.startsWith("Wrong")){
+                tvText.setTextColor(Color.RED)
+            }else{
+                tvText.setTextColor(Color.BLACK)
+            }
         }
     }
 
